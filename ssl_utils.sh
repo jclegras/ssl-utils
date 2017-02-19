@@ -40,7 +40,7 @@ check_issuer_certificate() {
     openssl x509 -noout -issuer -in "${1}"
 }
 
-# Print out the issuer name (the Subject refers to the certificate itself).
+# Print out the subject name (the Subject refers to the certificate itself).
 check_subject_certificate() {
     openssl x509 -noout -subject -in "${1}"
 }
@@ -108,6 +108,10 @@ generate_self_signed_certificate() {
     openssl x509 -signkey "${1}" -in "${2}" -req -days 365 -out "${3}"
 }
 
+# Generate a signed certificate from a request.
+generate_signed_certificate() {
+    openssl x509 -req -in "${1}" -out "${2}" -CA "${3}" -CAkey "${3}" -CAcreateserial -CAserial "${4}"
+}
 case "$1" in
     check_rsa_key)
         check_rsa_key "$2"
@@ -174,7 +178,10 @@ case "$1" in
         ;;
     generate_self_signed_certificate)
         generate_self_signed_certificate "${@:2}"
-        ;;                          
+        ;;
+    generate_signed_certificate)
+        generate_signed_certificate "${@:2}"
+        ;;
     *)
     echo "Unknown command"
     exit 1
