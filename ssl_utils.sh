@@ -112,6 +112,15 @@ generate_self_signed_certificate() {
 generate_signed_certificate() {
     openssl x509 -req -in "${1}" -out "${2}" -CA "${3}" -CAkey "${3}" -CAcreateserial -CAserial "${4}"
 }
+
+# Create the true certificate resulting from the concatenation of CA certificate and signed certificate.
+# $1: Signed certificate obtained from a CA
+# $2: Intermediate CA certificate
+# $3: Filename of the resulting certificate
+# Example: https://knowledge.geotrust.com/support/knowledge-base/index?page=content&id=SO17483
+concat_certif_to_intermediate_ca_certificate() {
+    cat "${1}" "${2}" > "${3}"
+}
 case "$1" in
     check_rsa_key)
         check_rsa_key "$2"
@@ -181,6 +190,9 @@ case "$1" in
         ;;
     generate_signed_certificate)
         generate_signed_certificate "${@:2}"
+        ;;
+    concat_certif_to_intermediate_ca_certificate)
+        concat_certif_to_intermediate_ca_certificate "${@:2}"
         ;;
     *)
     echo "Unknown command"
