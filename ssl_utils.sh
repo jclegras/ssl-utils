@@ -121,6 +121,17 @@ generate_signed_certificate() {
 concat_certif_to_intermediate_ca_certificate() {
     cat "${1}" "${2}" > "${3}"
 }
+
+# Check the validity of the certificate
+# Ex: openssl verify -crl_check -CAfile crl_chain.pem wikipedia.pem
+verify_certificate() {
+    if [ "$#" -eq 1 ]; then
+      openssl verify -crl_check "${1}"
+    else
+      openssl verify -crl_check -CAfile "${1}" "${2}"
+    fi
+}
+
 case "$1" in
     check_rsa_key)
         check_rsa_key "$2"
@@ -193,6 +204,9 @@ case "$1" in
         ;;
     concat_certif_to_intermediate_ca_certificate)
         concat_certif_to_intermediate_ca_certificate "${@:2}"
+        ;;
+    verify_certificate)
+        verify_certificate "${@:2}"
         ;;
     *)
     echo "Unknown command"
