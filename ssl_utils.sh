@@ -69,10 +69,12 @@ print_rsa_public_part() {
 print_rsa_public_part_rsa_format() {
     openssl rsa -in "${1}" -RSAPublicKey_out -out "${2}"
 }
+
 # Encrypt a private key using the given encrypt option.
 encrypt_rsa_key() {
     openssl rsa -in "${1}" -"${2}" -out "${3}"
 }
+
 # To remove the pass phrase on an RSA private key.
 decrypt_rsa_key() {
     openssl rsa -in "${1}" -out "${2}"
@@ -129,6 +131,21 @@ verify_certificate() {
       openssl verify -crl_check "${1}"
     else
       openssl verify -crl_check -CAfile "${1}" "${2}"
+    fi
+}
+
+# Verify that the certificate was created with the given private key
+match_certificate_and_private_key() {
+    crt_md5_sum=$(openssl x509 -noout -modulus -in "${1}" | openssl md5 | cut -d' ' -f2)
+    key_md5_sum=$(openssl rsa -noout -modulus -in "${2}" | openssl md5 | cut -d' ' -f2)
+
+    echo "Modulus of the public key contained in the certificate: ${crt_md5_sum}"
+    echo "Modulus of the public key contained in the private key: ${key_md5_sum}"
+
+    if [ "${crt_md5_sum}" == "${key_md5_sum}" ]; then
+        echo "The modulus matched"
+    else
+        echo "The modulus are different"
     fi
 }
 
@@ -207,6 +224,9 @@ case "$1" in
         ;;
     verify_certificate)
         verify_certificate "${@:2}"
+        ;;
+    match_certificate_and_private_key)
+        match_certificate_and_private_key "${@:2}"
         ;;
     *)
     echo "Unknown command"
